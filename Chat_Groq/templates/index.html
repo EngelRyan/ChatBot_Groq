@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        #chat {
+            height: 500px; 
+            overflow-y: auto; 
+        }
+        .message {
+            word-wrap: break-word; 
+            max-width: 80%; 
+            display: flex; 
+            align-items: flex-start; 
+            margin-bottom: 10px;
+        }
+        
+        .avatar {
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            margin-left: 5px; 
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="rounded-lg border bg-white shadow-lg w-full max-w-lg h-[700px] grid grid-rows-[min-content_1fr_min-content]">
+        <div class="flex flex-col space-y-1.5 p-6">
+            <h3 class="text-2xl font-semibold leading-none tracking-tight">Chat AI</h3>
+            <p class="text-sm text-gray-500">Using Groq AI API to create a chat bot.</p>
+        </div>
+        <div id="chat" class="p-6 pt-0 space-y-4"></div>
+        <div class="flex items-center p-6 pt-0">
+            <form id="chat-form" class="w-full flex gap-2" onsubmit="sendMessage(event)">
+                <input 
+                    id="user_input" 
+                    class="flex h-10 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="How can I help you?" 
+                    required>
+                <button 
+                    class="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500 transition-colors" 
+                    type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function appendMessage(role, content) {
+            const chat = document.getElementById('chat');
+            const message = document.createElement('div');
+            message.className = 'message ' + role;
+
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'flex gap-3 text-slate-600 text-sm';
+
+            // Criar o avatar
+            const avatarContainer = document.createElement('span');
+            avatarContainer.className = 'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full';
+            
+            const avatar = document.createElement('img');
+            avatar.className = 'aspect-square h-full w-full';
+            avatar.src = role === 'user' ? 'https://th.bing.com/th/id/OIP.zbRlGhTqa080PingXewEVQHaHa?rs=1&pid=ImgDetMain' : 'https://striking-kindness-e0d93214bb.media.strapiapp.com/Groq_logo_a170a51625.jpg';
+            
+            avatarContainer.appendChild(avatar);
+
+            // Criar conteúdo da mensagem
+            const messageContent = document.createElement('p');
+            messageContent.className = 'leading-relaxed';
+            messageContent.innerHTML = `<span class="block font-bold text-slate-700">${role === 'user' ? 'Usuário:' : 'IA:'}</span> ${content}`;
+
+            
+            contentContainer.appendChild(avatarContainer);
+            contentContainer.appendChild(messageContent);
+            message.appendChild(contentContainer);
+            
+            chat.appendChild(message);
+            chat.scrollTop = chat.scrollHeight; 
+        }
+
+        async function sendMessage(event) {
+            event.preventDefault(); 
+            const input = document.getElementById('user_input');
+            const userMessage = input.value;
+            appendMessage('user', userMessage);
+            input.value = '';
+
+            try {
+                const response = await fetch('/send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                appendMessage('assistant', data.response);
+            } catch (error) {
+                console.error('Erro ao enviar a mensagem:', error);
+                appendMessage('assistant', 'Desculpe, ocorreu um erro ao processar sua solicitação.');
+            }
+        }
+    </script>
+</body>
+</html>
