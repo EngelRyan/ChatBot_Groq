@@ -13,7 +13,7 @@ Antes de executar o projeto, você precisa ter:
 
 1. **Clone o repositório**:
   ```bash
-   git clone https://github.com/SEU_USUARIO/Prompt_Chat.git
+   git clone https://github.com/engelryan/ChatBot_Groq.git
    cd Prompt_Chat
   ```
 2. **Instale as dependências:**:
